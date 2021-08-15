@@ -19,7 +19,7 @@ namespace TennisBookings.Web
             var host = CreateHostBuilder(args).Build();
 
             using (var scope = host.Services.CreateScope())
-            {
+    {
                 var serviceProvider = scope.ServiceProvider;
 
                 var hostingEnvironment = serviceProvider.GetRequiredService<IWebHostEnvironment>();

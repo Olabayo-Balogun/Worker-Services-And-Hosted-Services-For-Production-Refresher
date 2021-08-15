@@ -13,6 +13,8 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Options;
 using TennisBookings.ResultsProcessing;
 using Amazon.S3;
+using TennisBookings.Web.BackgroundServices;
+using TennisBookings.Web.Core;
 
 namespace TennisBookings.Web
 {
@@ -34,7 +36,7 @@ namespace TennisBookings.Web
             {
                 option.ShutdownTimeout = TimeSpan.FromSeconds(60); // allow up to 60 seconds to complete any in-progress results processing.
             });
-            
+
             services.AddDbContext<TennisBookingDbContext>(options =>
                 options.UseSqlServer(
                     Configuration.GetConnectionString("DefaultConnection")));
@@ -48,7 +50,7 @@ namespace TennisBookings.Web
             services.Configure<GreetingConfiguration>(Configuration.GetSection("Features:Greeting"));
             services.Configure<WeatherForecastingConfiguration>(Configuration.GetSection("Features:WeatherForecasting"));
             services.Configure<ExternalServicesConfig>(ExternalServicesConfig.WeatherApi, Configuration.GetSection("ExternalServices:WeatherApi"));
-            
+
             services.Configure<ScoreProcesingConfiguration>(Configuration.GetSection("ScoreProcessing"));
 
             services.Configure<ContentConfiguration>(Configuration.GetSection("Content"));
@@ -74,7 +76,11 @@ namespace TennisBookings.Web
             services.AddTennisPlayerApiClient(options => options.BaseAddress = Configuration.GetSection("ExternalServices:TennisPlayersApi")["Url"]);
             services.AddStatisticsApiClient(options => options.BaseAddress = Configuration.GetSection("ExternalServices:StatisticsApi")["Url"]);
             services.AddResultProcessing();
-           
+
+            //This is where we register the WeatherCacheService
+            if (Configuration.IsWeatherForecastEnabled())
+                services.AddHostedService<WeatherCacheService>();
+
             services.AddControllersWithViews();
             services.AddRazorPages(options =>
             {
@@ -104,7 +110,7 @@ namespace TennisBookings.Web
 
                     return s3Client;
                 });
-            }          
+            }
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
