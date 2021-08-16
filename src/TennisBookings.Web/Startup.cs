@@ -77,9 +77,15 @@ namespace TennisBookings.Web
             services.AddStatisticsApiClient(options => options.BaseAddress = Configuration.GetSection("ExternalServices:StatisticsApi")["Url"]);
             services.AddResultProcessing();
 
+            //Here is where we register the FileProcessingChannel
+            services.AddSingleton<FileProcessingChannel>();
+
             //This is where we register the WeatherCacheService
             if (Configuration.IsWeatherForecastEnabled())
                 services.AddHostedService<WeatherCacheService>();
+
+            //This is where we register the FileProcessing Service
+            services.AddHostedService<FileProcessingService>();
 
             services.AddControllersWithViews();
             services.AddRazorPages(options =>
